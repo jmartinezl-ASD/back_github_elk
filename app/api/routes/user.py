@@ -1,21 +1,32 @@
-from fastapi import APIRouter
-from app.services.user import members_organization, index_members_GrupoASD
+from fastapi import APIRouter, HTTPException
+from app.services.user import miembros_organización_servicio, index_members_GrupoASD, miembros_activos_servicio
 from dotenv import load_dotenv
+from elasticsearch import Elasticsearch
 
 load_dotenv()
-router = APIRouter(prefix="/Users", tags=["Users"])
+router = APIRouter(prefix="/Users", tags=["Usuarios"])
 
-@router.get("/organization_members")
-async def get_organization_members():
-    all_members_data = await members_organization()
+@router.get("/miembros_grupoASD")
+async def miembros_grupoASD():
+    miembros_data = await miembros_organización_servicio()
     try:
-        members = await index_members_GrupoASD(all_members_data)
-        return members
+        await index_members_GrupoASD(miembros_data)
     except Exception as e:
-        return print(f"No se pudo enviar datos a Elasticsearch: {e}")
+        print(f"No se pudo enviar datos a Elasticsearch: {e}")
+        return miembros_data
+    
+@router.get("/miembros_activos")
+async def miembros_activos():
+    try:
+        miembros_activos = await miembros_activos_servicio()
+        return miembros_activos
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 # SISTEMATIZACIÓN RUTAS
     
-@router.on_event("startup")
-async def startup_event():
-    await get_organization_members()
+# @router.on_event("startup")
+# async def startup_event():
+#     await get_organization_members()  
+#     print("La aplicación ha iniciado y se ha conectado a Elasticsearch.")
+

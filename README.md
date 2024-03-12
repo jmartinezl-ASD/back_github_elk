@@ -1,99 +1,33 @@
 # poc-github-elk
-poc-github-elk
 
-*En la terminal cmd* 
+## poc-github-elk
 
-- Creacion del entorno virtual
-python -m venv nombre_del_entorno
-py -m venv venv
+1. Creacion del entorno virtual
 
-- Entrar en el entorno virtual
-nombre_del_entorno\Scripts\activate
-venv\Scripts\activate 
+- `python -m venv nombre_del_entorno`
 
-- Installar dependencias
-pip install requests
+2. Entrar en el entorno virtual
 
-- Ver dependecias
-pip list
+- `nombre_del_entorno\Scripts\activate`
 
-- Salir del entorno virtual
-deactivate
+3. Installar dependencias
 
-- Ejecutar servidor local
-uvicorn main:app --reload
+- `pip install -r requests`
 
-Documetation about GitHub Rest: https://docs.github.com/en/rest?apiVersion=2022-11-28
+0. Para visualizar las dependencias de este proyecto, consulta el archivo requirements.txt con las siguientes lineas en la terminal
 
--   informacion de los usuarios: 
-1. Para buscar al usuario:
-https://api.github.com/users/ { owner }
+- `pip freeze requeriments.txt`
+- `pip list`
 
-2. Para buscar los repositorios de un usuario:
-https://api.github.com/users/ { owner } /repos
+4. Salir del entorno virtual
 
-3. Para ver info relevante sobre el usuario: (requiere autenticacion)
-https://api.github.com/users/ { owner } /hovercard
+- `deactivate`
 
-4. Para ver las llaves: (requiere autenticacion)
-https://api.github.com/users/ { owner } /keys
+5. Ejecutar servidor local
 
-1. Para buscar las ramas de un repositorio:
-https://api.github.com/repos/ { owner } / { repo } /branches
+- `uvicorn main:app --reload`
 
-2. Para ver los comits de un repositorio:
-https://api.github.com/repos/ { owner } / { repo} /commits
+Documetation about GitHub Api Rest: https://docs.github.com/en/rest?apiVersion=2022-11-28
 
-3. Para ver los lenguajes de un repositorio:
-https://api.github.com/repos/ { owner } / { repo } /languages
+En resumen, al ejecutar tu aplicación FastAPI en el servidor local al que puedes acceder a ella a través de la dirección http://127.0.0.1:8000.
 
-4. Para ver los problemas de un repositorio:
-https://api.github.com/repos/ { owner} / { repo } /issues
-
-5. Para ve la lista de todos los artefactos de un repositorio
-https://api.github.com/repos/ { owner }/ { repo } /actions/artifacts
-
-6. Para saber los eventos del repositorio
-https://api.github.com/repos/ { owner } / { repo } /events
-
-7. Para revisar la lista de pulls realizados
-https://api.github.com/repos/ { owner } / { repo } /pulls 
-
-8. Para ver una lista de releases
-https://api.github.com/repos/ { owner } / { repo } /releases
-
-9. Para ver los colaboradores de un repositorio: (requiere autenticacion)
-https://api.github.com/repos/ { owner} / { repo } /collaborators
-
-10. Para ver el contenido de un repositorio
-https://api.github.com/repos/ { owner } / { repo } /contents
-https://api.github.com/repos/ { owner } / { repo } /contents / { path }
-
--  informacion de la empresa:     
-
-1. lista de organizaciones:
-https://api.github.com/organizations
-
-2. informacion de la cuenta empresarial: 
-https://api.github.com/orgs/ { org }
-
-3. miembros relacionados:
-https://api.github.com/orgs/ { org } /members
-https://api.github.com/orgs/ { org } /public_members
-
-4. gestion de equipos y permisos: (requiere autenticacion)
-https://api.github.com/orgs/ { org } /teams
-
-5. visualizar la lista de usuarios blokeados por la organizacion: (requiere autenticacion)
-https://api.github.com/orgs/ { org } /blocks
-
-6. visualizacion de los repositorios:
-https://api.github.com/orgs/ { org } /repos
-
-7. ver lista de proyectos
-https://api.github.com/orgs/ { org } /projects
-
-8. ver la lista de colaboradores por proyecto
-https://api.github.com/orgs/ { org } /projects/ { project_id } /collaborators
-
-En resumen, esta parte del código se encarga de ejecutar tu aplicación FastAPI en el servidor local para que puedas acceder a ella a través de la dirección http://localhost:8000.

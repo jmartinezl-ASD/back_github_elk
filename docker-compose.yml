@@ -1,0 +1,31 @@
+version: '3'
+services:
+  fastapi-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+        while ! curl -s http://elasticsearch:9200/ > /dev/null; do
+          echo 'Waiting for Elasticsearch...';
+          sleep 1;
+        done;
+        echo 'Elasticsearch is up!';
+        uvicorn main:app --reload --port=8000 --host=0.0.0.0
+      "
+    ports:
+      - "8000:8000"
+    environment:
+      - ELASTIC_SEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - network.host=0.0.0.0
+      - http.port=9200
+    ports:
+      - "9200:9200"
