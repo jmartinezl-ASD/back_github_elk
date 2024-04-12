@@ -1,21 +1,63 @@
-from fastapi import APIRouter,HTTPException
-from app.services.commitsService import service_commits
+from fastapi import APIRouter, HTTPException
+from app.services.commitsService import (
+    commits_usuario_repo,
+    commits_por_dia_func,
+    commits_por_hora_func,
+    index_commits_usu,
+    index_commits,
+)
 from dotenv import load_dotenv
-import os
+from config import config
+import logging
 
 load_dotenv()
-TOKEN = os.getenv("TOKEN")
+
 router = APIRouter(prefix="/Commits", tags=["Commit"])
 
-###### COMMITS ######   
-## RUTA COMMITS USUARIO ##
-@router.get("/Informacion")
-async def obtener_commits_repositorio(usuario: str, repositorio: str):
-    if not TOKEN:
-        raise HTTPException(status_code=500, detail="Token de acceso a GitHub no proporcionado")
+
+async def repetir_tareas_commits():
+    logging.info("Módulo Commits")
+    logging.debug(f"El valor actual del TOKEN es: {config['TOKEN']}")
+    await contador_commits_usuariosRepo()
+    await obtener_media_commits_por_dia()
+    await obtener_media_commits_por_hora()
+
+
+@router.get("/")
+async def contador_commits_usuariosRepo():
     try:
-        commits = service_commits(usuario, repositorio, TOKEN)
-        return commits
-    except HTTPException as e:
-        raise e
-    
+        commits_usuarioRep = await commits_usuario_repo()
+        if not commits_usuarioRep:
+            raise HTTPException(
+                status_code=400, detail="No se encontraron datos de commits"
+            )
+        await index_commits_usu(commits_usuarioRep, "data_github")
+        return commits_usuarioRep
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error interno del servidor: {str(e)}"
+        )
+
+
+@router.get("/PorDia")
+async def obtener_media_commits_por_dia():
+    commits_por_dia = commits_por_dia_func()
+    try:
+        await index_commits(commits_por_dia, "data_github")
+        return commits_por_dia
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error interno del servidor: {str(e)}"
+        )
+
+
+@router.get("/PorHora")
+async def obtener_media_commits_por_hora():
+    commits_por_hora = commits_por_hora_func()
+    try:
+        await index_commits(commits_por_hora, "data_github")
+        return commits_por_hora
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error interno del servidor: {str(e)}"
+        )

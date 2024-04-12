@@ -1,31 +1,96 @@
 version: '3'
 services:
+ 
   fastapi-backend:
     build:
       context: .
       dockerfile: Dockerfile
     command: >
       sh -c "
-        while ! curl -s http://elasticsearch:9200/ > /dev/null; do
-          echo 'Waiting for Elasticsearch...';
-          sleep 1;
+        until curl -s http://elasticsearch01:9200 >/dev/null; do
+          echo 'Esperando Elasticsearch...';
+          sleep 10;
         done;
-        echo 'Elasticsearch is up!';
-        uvicorn main:app --reload --port=8000 --host=0.0.0.0
+        echo 'Elasticsearch en funcionamiento!';
+        uvicorn main:app --reload --port=8000 --host=0.0.0.0;
       "
-    ports:
-      - "8000:8000"
     environment:
-      - ELASTIC_SEARCH_URL=http://elasticsearch:9200
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_SEARCH_URL=${ELASTIC_SEARCH_URL}
+      - TOKEN=${TOKEN}
+      - TZ=America/Bogota
+    ports:
+      - 8000:8000
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - elk
     depends_on:
-      - elasticsearch
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
+      - elasticsearch01
+ 
+  elasticsearch01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.18
+    container_name: elasticsearch01
     environment:
-      - xpack.security.enabled=false
-      - discovery.type=single-node
-      - network.host=0.0.0.0
-      - http.port=9200
+      TZ: America/Bogota
+      node.name: elasticsearch01
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      discovery.type: single-node
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - elk
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "20"
+ 
+  kibana01:
+    depends_on:
+      - elasticsearch01
+    image: docker.elastic.co/kibana/kibana:7.17.18
+    container_name: kibana01
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      TZ: America/Bogota
+      ELASTICSEARCH_URL: ${ELASTIC_SEARCH_URL}
+      ELASTICSEARCH_HOSTS: ${ELASTIC_SEARCH_URL}
+      ELASTICSEARCH_USERNAME: ${ELASTICSEARCH_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
     ports:
-      - "9200:9200"
+      - 5601:5601
+    networks:
+      - elk
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "20"
+ 
+volumes:
+  elasticsearch_data:
+    driver: local
+ 
+networks:
+  elk:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.100.0/24

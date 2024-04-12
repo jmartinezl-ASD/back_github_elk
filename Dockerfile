@@ -6,9 +6,11 @@ COPY . /app
 
 COPY wait-for-es.sh /wait-for-es.sh
 
-ENV TOKEN='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'
 ENV GITHUB_API_URL='https://api.github.com'
+
 ENV ORG='Grupo-ASD'
+
+ENV PYTHONUNBUFFERED=1
 
 RUN pip install -r requirements.txt
 
